@@ -1,0 +1,36 @@
+vault secrets enable ssh
+--------------------------------------
+Create a role for this ssh which user has to connect for this remote host this is for first time on configuration to allow users 
+
+vault write ssh/roles/my-role -<<EOF
+{
+  "algorithm_signer": "rsa-sha2-256",
+  "allow_user_certificates": true,
+  "allowed_users": "*",
+  "allowed_extensions": "permit-pty,permit-port-forwarding",
+  "default_extensions": {
+    "permit-pty": ""
+  },
+  "key_type": "ca",
+  "default_user": "ubuntu",
+  "ttl": "30m0s"
+}
+EOF
+
+vault write ssh/config/ca generate_signing_key=true
+Key           Value
+---           -----
+public_key    ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQCg59vGUwPFs9OjkROd1MR8QtQ73W0veY+ONDGVtUrUHeMGWKicK3oCK7wEQY2NK0hReZAorGIU/lc16c40D0r5HvQlP1M0KEjGeY+EVYR6QiZdP3O+V2d3wJb3Zf6bGzDEDvapaYxlelE7axkY5K978H/xBt98ZQfDPfFiGBBXtQ3Y3ZfYQuL9flAngkFVw4fmWqkumOltv9+XwgZY/z7PKSwTP7HFKzX47/wGmzNTNgGYjGra0WrDk640zlEBpvz/eVDodFbw5kPsqniqyIcyGVU9TMixTMLLCvTfF3C4tJ0PjAbZP65nxVoAkfORWdxfLMDW3XH+D66ktVAPIS0AHljKhOYFP2VyqwYqPwznM+UkV3RP6Q64bv2g1QJGfFCyNzEbVFWmPb4afx1D+BvEteh7sdRBHF7fUj5lT7hhWJYHgufTGZUyCtYtKedwTKWw+u/FT+4K8svzjkunBHVK3BIGY5s5vXiRoaM86ftYzkoLcIq5iy2nBDDODz4MtydN1XvxWYYW9uiWrskpfxP0Edd/hDqYvIvXdEieilbKCK51iDWlQVFKG7CPX235qBY9/XBhH8ij8XRzeog0WM+X+s+gK+GtaAtSGcOgbEg5t1k/pLGzbeYAQdcLqKE6tioA2YG78DjczujMH8sB1Iz3nGrP2ezjy4yVA9N+fJmseQ==
+
+
+  Add the line in the /etc/ssh/sshd_conf file
+
+
+# /etc/ssh/sshd_config
+# ...
+TrustedUserCAKeys /etc/ssh/ca.pub
+
+
+vault read -field=public_key ssh/config/ca > /etc/ssh/ca.pub
+
+  
